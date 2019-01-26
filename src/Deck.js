@@ -52,6 +52,7 @@ class Deck extends Component {
     const { onSwipeLeft, onSwipeRight, data } = this.props;
     const item = data[this.state.index];
     direction === 'right' ? onSwipeRight(item) : onSwipeLeft(item);
+    this.state.position.setValue({ x: 0, y: 0 });
     this.setState({ index: this.state.index + 1 });
   }
 
@@ -74,12 +75,20 @@ class Deck extends Component {
   }
 
   renderCards() {
-    return this.props.data.map((item, index) => {
-      if(index === 0) {
+    if (this.state.index >= this.props.data.length) {
+      return this.props.renderNoMoreCards();
+    }
+
+    return this.props.data.map((item, i) => {
+      if (i < this.state.index) {
+        return null
+      }
+
+      if(i === this.state.index) {
         return (
           <Animated.View
             key={item.id}
-            style={this.getCardStyle()}
+            style={[this.getCardStyle(), styles.cardStyle, { zIndex: 1 }]}
             {...this.state.panResponder.panHandlers}
           >
             {this.props.renderCard(item)}
@@ -87,8 +96,12 @@ class Deck extends Component {
         )
       }
 
-      return this.props.renderCard(item)
-    });
+      return (
+        <Animated.View key={item.id} style={styles.cardStyle}>
+          {this.props.renderCard(item)}
+        </Animated.View>
+      );
+    }).reverse();
   }
 
   render() {
@@ -98,6 +111,16 @@ class Deck extends Component {
         {this.renderCards()}
       </View>
     );
+  }
+}
+
+const styles = {
+  cardStyle: {
+    position: 'absolute',
+    width: SCREEN_WIDTH,
+    zIndex: 0
+    // left: 0,
+    // right: 0
   }
 }
 
